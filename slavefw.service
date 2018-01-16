@@ -1,0 +1,9 @@
+[Unit]
+Description=Slave FW Autostarter
+
+[Service]
+Type=oneshot
+ExecStart=/root/slavefw.sh
+
+[Install]
+WantedBy=multi-user.target

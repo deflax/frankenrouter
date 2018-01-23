@@ -2,8 +2,10 @@
 Description=Slave FW Autostarter
 
 [Service]
-Type=oneshot
-ExecStart=/root/slavefw.sh
+WorkingDirectory=/root/
+Type=forking
+ExecStart=/bin/bash /root/frankenrouter/slavefw.sh
+KillMode=process
 
 [Install]
 WantedBy=multi-user.target

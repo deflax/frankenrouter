@@ -1,8 +1,11 @@
 #!/bin/bash
 
 PUBIF=ens18
-TRANSPORT_IP="1.2.3.252/24"
-TRANSPORT_GW="1.2.3.1"
+TRANSPORT_IP="87.120.110.252/24"
+TRANSPORT_GW="87.120.110.1"
+
+mkdir -p /root/fr-vlanconf
+mkdir -p /root/fr-workscripts
 
 ip addr add $TRANSPORT_IP dev $PUBIF
 sleep 5

@@ -287,23 +287,40 @@ def setpubips():
         #data += 'iptables -P FORWARD -j ACCEPT -i '
 
     data = """
-ip link add vtap122 link $INET_IFACE type macvlan
-ip addr add 87.120.110.41/24 dev vtap122
-ip link set dev vtap122 up
-$IPT -t nat -A PREROUTING -d 87.120.110.41 -j DNAT --to-destination 10.0.122.10
-$IPT -t nat -A POSTROUTING -s 10.0.122.10 -j SNAT --to-source 87.120.110.41
+ip link del vtap107
+ip link add vtap107 link $INET_IFACE type macvlan
+ip addr add 87.120.110.42/24 dev vtap107
+ip link set dev vtap107 up
+$IPT -t nat -A PREROUTING -d 87.120.110.42 -j DNAT --to-destination 10.0.107.10
+$IPT -t nat -A POSTROUTING -s 10.0.107.10 -j SNAT --to-source 87.120.110.42
 
+ip link del vtap120
 ip link add vtap120 link $INET_IFACE type macvlan
 ip addr add 87.120.110.43/24 dev vtap120
 ip link set dev vtap120 up
 $IPT -t nat -A PREROUTING -d 87.120.110.43 -j DNAT --to-destination 10.0.120.10
 $IPT -t nat -A POSTROUTING -s 10.0.120.10 -j SNAT --to-source 87.120.110.43
 
+ip link del vtap121
 ip link add vtap121 link $INET_IFACE type macvlan
 ip addr add 87.120.110.44/24 dev vtap121
 ip link set dev vtap121 up
 $IPT -t nat -A PREROUTING -d 87.120.110.44 -j DNAT --to-destination 10.0.121.10
 $IPT -t nat -A POSTROUTING -s 10.0.121.10 -j SNAT --to-source 87.120.110.44
+
+ip link del vtap122
+ip link add vtap122 link $INET_IFACE type macvlan
+ip addr add 87.120.110.41/24 dev vtap122
+ip link set dev vtap122 up
+$IPT -t nat -A PREROUTING -d 87.120.110.41 -j DNAT --to-destination 10.0.122.10
+$IPT -t nat -A POSTROUTING -s 10.0.122.10 -j SNAT --to-source 87.120.110.41
+
+ip link del vtap140
+ip link add vtap140 link $INET_IFACE type macvlan
+ip addr add 87.120.110.40/24 dev vtap140
+ip link set dev vtap140 up
+$IPT -t nat -A PREROUTING -d 87.120.110.40 -j DNAT --to-destination 10.0.140.10
+$IPT -t nat -A POSTROUTING -s 10.0.140.10 -j SNAT --to-source 87.120.110.40
 
 """
     return data

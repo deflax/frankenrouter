@@ -5,10 +5,9 @@ import requests
 import json
 import datetime
 import os
+import sys
 
-dburl = 'https://www.datapoint.bg/vmanager/slavetables/1'
 clientiface = 'ens19'
-
 workscriptpath = '/root/fr-workscripts/'
 
 ###
@@ -278,58 +277,29 @@ dhcpd -4 -cf /root/fr-vlanconf/v{0}.dhconf -lf /root/fr-vlanconf/v{0}.dhlease -p
     return data
 
 def setpubips():
-    db_result = requests.get(dburl, headers={"content-type": "application/json"}, timeout=30 )
-    proxjson = db_result.json()
-    for key, value in proxjson['addresses'].items():
-        pass
-        #data += '#ip: ' + value['ipv4'] + '  mac:' + value['mac'] + '\n'
-        #data += 'iptables -P FORWARD DROP\n'
-        #data += 'iptables -P FORWARD -j ACCEPT -i '
-
-    data = """
-ip link del vtap107
-ip link add vtap107 link $INET_IFACE type macvlan
-ip addr add 87.120.110.42/24 dev vtap107
-ip link set dev vtap107 up
-$IPT -t nat -A PREROUTING -d 87.120.110.42 -j DNAT --to-destination 10.0.107.10
-$IPT -t nat -A POSTROUTING -s 10.0.107.10 -j SNAT --to-source 87.120.110.42
-
-ip link del vtap120
-ip link add vtap120 link $INET_IFACE type macvlan
-ip addr add 87.120.110.43/24 dev vtap120
-ip link set dev vtap120 up
-$IPT -t nat -A PREROUTING -d 87.120.110.43 -j DNAT --to-destination 10.0.120.10
-$IPT -t nat -A POSTROUTING -s 10.0.120.10 -j SNAT --to-source 87.120.110.43
-
-ip link del vtap121
-ip link add vtap121 link $INET_IFACE type macvlan
-ip addr add 87.120.110.44/24 dev vtap121
-ip link set dev vtap121 up
-$IPT -t nat -A PREROUTING -d 87.120.110.44 -j DNAT --to-destination 10.0.121.10
-$IPT -t nat -A POSTROUTING -s 10.0.121.10 -j SNAT --to-source 87.120.110.44
-
-ip link del vtap122
-ip link add vtap122 link $INET_IFACE type macvlan
-ip addr add 87.120.110.41/24 dev vtap122
-ip link set dev vtap122 up
-$IPT -t nat -A PREROUTING -d 87.120.110.41 -j DNAT --to-destination 10.0.122.10
-$IPT -t nat -A POSTROUTING -s 10.0.122.10 -j SNAT --to-source 87.120.110.41
-
-ip link del vtap140
-ip link add vtap140 link $INET_IFACE type macvlan
-ip addr add 87.120.110.40/24 dev vtap140
-ip link set dev vtap140 up
-$IPT -t nat -A PREROUTING -d 87.120.110.40 -j DNAT --to-destination 10.0.140.10
-$IPT -t nat -A POSTROUTING -s 10.0.140.10 -j SNAT --to-source 87.120.110.40
-
-"""
+    rr = open('/root/pubip.cache', 'r').read()
+    cache = json.loads(rr)
+    data = ''
+    for ip, vlan in cache.items():
+        print('ip: ' + ip)
+        print('vlan: ' + vlan)
+        print(' ')
+        data += """
+ip link del vtap{1}
+ip link add vtap{1} link $INET_IFACE type macvlan
+ip addr add {0}/24 dev vtap{1}
+ip link set dev vtap{1} up
+$IPT -t nat -A PREROUTING -d {0} -j DNAT --to-destination 10.0.{1}.10
+$IPT -t nat -A POSTROUTING -s 10.0.{1}.10 -j SNAT --to-source {0}
+""".format(ip, vlan)
     return data
 
-def routerinit():
-    bashexec('fwfconfig', initfw())
-    bashexec('vlfconfig', setvlans(clientiface))
-    bashexec('ipfconfig', setpubips())
-
 if __name__ == "__main__":
-    routerinit()
+    if sys.argv[1] == 'init':
+        bashexec('fwfconfig', initfw())
+        bashexec('vlfconfig', setvlans(clientiface))
+
+    if sys.argv[1] == 'apply':
+        print(setpubips())
+        #bashexec('ipfconfig', setpubips())
 

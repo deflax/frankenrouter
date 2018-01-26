@@ -280,10 +280,13 @@ def setpubips():
     rr = open('/root/pubip.cache', 'r').read()
     cache = json.loads(rr)
     data = ''
+    data += """
+$IPT -t nat -P PREROUTING ACCEPT
+$IPT -t nat -P POSTROUTING ACCEPT
+$IPT -t nat -F
+$IPT -t nat -X
+"""
     for ip, vlan in cache.items():
-        print('ip: ' + ip)
-        print('vlan: ' + vlan)
-        print(' ')
         data += """
 ip link del vtap{1}
 ip link add vtap{1} link $INET_IFACE type macvlan
@@ -300,6 +303,5 @@ if __name__ == "__main__":
         bashexec('vlfconfig', setvlans(clientiface))
 
     if sys.argv[1] == 'apply':
-        print(setpubips())
-        #bashexec('ipfconfig', setpubips())
+        bashexec('ipfconfig', setpubips())
 

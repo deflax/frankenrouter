@@ -11,6 +11,8 @@ ip addr add $TRANSPORT_IP dev $PUBIF
 sleep 5
 ip route add default via $TRANSPORT_GW
 
+sysctl -p
+
 python3 /root/frankenrouter/frankenrouter.py init
 python3 /root/frankenrouter/frankenrouter.py apply
 

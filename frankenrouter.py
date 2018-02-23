@@ -202,13 +202,13 @@ $IPT -A INPUT -p TCP -i $INET_IFACE -j tcp_inbound
 $IPT -A INPUT -p UDP -i $INET_IFACE -j udp_inbound
 $IPT -A INPUT -p ICMP -i $INET_IFACE -j icmp_packets
 $IPT -A INPUT -m pkttype --pkt-type broadcast -j DROP
-$IPT -A INPUT -j LOG --log-prefix "fp=INPUT:99 a=DROP "
+#$IPT -A INPUT -j LOG --log-prefix "fp=INPUT:99 a=DROP "
 
 echo "Process FORWARD chain ..."
 $IPT -A FORWARD -p ALL -j bad_packets
 $IPT -A FORWARD -i $INET_IFACE -j ACCEPT
 #FORWARD index: 3
-$IPT -A FORWARD -j LOG --log-prefix "fp=FORWARD:99 a=DROP "
+#$IPT -A FORWARD -j LOG --log-prefix "fp=FORWARD:99 a=DROP "
 
 echo "Process OUTPUT chain ..."
 #$IPT -A OUTPUT -m state -p icmp --state INVALID -j DROP
@@ -301,6 +301,7 @@ if __name__ == "__main__":
     if sys.argv[1] == 'init':
         bashexec('fwfconfig', initfw())
         bashexec('vlfconfig', setvlans(clientiface))
+        bashexec('ipfconfig', setpubips())
 
     if sys.argv[1] == 'apply':
         bashexec('ipfconfig', setpubips())

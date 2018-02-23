@@ -3,10 +3,21 @@
 import requests
 import json
 import sys
+import re
 
-slave_name = 'lexx'
+conffile = open('/root/frankenrouter/config.sh', 'r')
+for line in conffile:
+    if re.search('LABEL', line):
+        slave_name = line.split('=', 1)[1].rstrip().replace('"', '')
+conffile.close()
 
-api_url = 'https://www.datapoint.bg/vmanager/slavetables'
+conffile = open('/root/frankenrouter/config.sh', 'r')
+for line in conffile:
+    if re.search('APIHOST', line):
+        api_host = line.split('=', 1)[1].rstrip().replace('"', '')
+conffile.close()
+
+api_url = 'https://' + str(api_host) + '/vmanager/slavetables'
 
 ###
 

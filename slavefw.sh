@@ -1,8 +1,6 @@
 #!/bin/bash
 
-PUBIF=ens18
-TRANSPORT_IP="87.120.110.252/24"
-TRANSPORT_GW="87.120.110.1"
+. /root/frankenrouter/config.sh
 
 mkdir -p /root/fr-vlanconf
 mkdir -p /root/fr-workscripts

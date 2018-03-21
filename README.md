@@ -1,29 +1,11 @@
 # README #
 
-This README would normally document whatever steps are necessary to get your application up and running.
+Frankenrouter software defined networking for proxadmin
 
-### What is this repository for? ###
+### Tests ###
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+* SHOULD be able to ping your own pub ip
+* SHOULD NOT be able to ping 10.0.102.10 (other client VDC)
+* COULD be able to ping 10.0.102.1 (other clinet VDC router)
+* SHOULD be able to ping other client public ip
 
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact

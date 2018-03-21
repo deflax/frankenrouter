@@ -30,7 +30,6 @@ SYSCTL="/sbin/sysctl -w"
 
 # Internet Interface
 INET_IFACE="ens18"
-INET_ORB="87.120.110.11"
 
 # Localhost Interface
 LO_IFACE="lo"
@@ -197,7 +196,8 @@ echo "Process INPUT chain ..."
 $IPT -A INPUT -p ALL -i $LO_IFACE -j ACCEPT
 $IPT -A INPUT -p ALL -j bad_packets
 #INPUT index: 3
-$IPT -A INPUT -p ALL -i $INET_IFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
+#$IPT -A INPUT -p ALL -i $INET_IFACE -m state --state ESTABLISHED,RELATED -j ACCEPT
+$IPT -A INPUT -p ALL -i $INET_IFACE -j ACCEPT
 $IPT -A INPUT -p TCP -i $INET_IFACE -j tcp_inbound
 $IPT -A INPUT -p UDP -i $INET_IFACE -j udp_inbound
 $IPT -A INPUT -p ICMP -i $INET_IFACE -j icmp_packets
@@ -217,9 +217,6 @@ $IPT -A OUTPUT -p ALL -o $LO_IFACE -j ACCEPT
 #OUTPUT index: 3
 $IPT -A OUTPUT -p ALL -o $INET_IFACE -j ACCEPT
 $IPT -A OUTPUT -j LOG --log-prefix "fp=OUTPUT:99 a=DROP "
-
-###############################################################################
-#$IPT -t nat -A POSTROUTING -o $INET_IFACE -j MASQUERADE
 
 """
     return data
@@ -252,6 +249,7 @@ subnet 10.0.{0}.0 netmask 255.255.255.0 {{
 
 """.format(vlanid)
         writefile('/root/fr-vlanconf/v{0}.dhconf'.format(vlanid), dhcpconf_template)
+
         data += """
 ### VLAN {0}
 echo "setting up vlan: {0}"
@@ -263,11 +261,11 @@ ip link add link {1} name {1}.{0} type vlan id {0}
 ip link set dev {1}.{0} up
 ip addr add 10.0.{0}.1/24 dev {1}.{0}
 
-$IPT -I INPUT 3 -p ALL -i {1}.{0} -d 10.0.{0}.255 -j ACCEPT
+#$IPT -I INPUT 3 -p ALL -i {1}.{0} -d 10.0.{0}.255 -j ACCEPT
 $IPT -I INPUT 3 -p ALL -i {1}.{0} -s 10.0.{0}.0/24 -j ACCEPT
-#$IPT -I FORWARD 3 -p ALL -i {1}.{0} -j ACCEPT
-#$IPT -I FORWARD 3 -p ALL -i $INET_IFACE -o {1}.{0} -d 10.0.{0}.10 -m state --state NEW -j ACCEPT
-$IPT -I FORWARD 3 -p ALL -i {1}.{0} -o $INET_IFACE -s 10.0.{0}.10 -j ACCEPT
+$IPT -I FORWARD 3 -p ALL -i {1}.{0} -s 10.0.{0}.10 -j ACCEPT
+#$IPT -I FORWARD 3 -p ALL -i {1}.{0} -o $INET_IFACE -s 10.0.{0}.10 -j ACCEPT
+##$IPT -I FORWARD 3 -p ALL -i $INET_IFACE -o {1}.{0} -d 10.0.{0}.10 -m state --state NEW -j ACCEPT
 $IPT -I OUTPUT 3 -p ALL -o {1}.{0} -j ACCEPT
 
 touch /root/fr-vlanconf/v{0}.dhpid
@@ -285,6 +283,7 @@ $IPT -t nat -P PREROUTING ACCEPT
 $IPT -t nat -P POSTROUTING ACCEPT
 $IPT -t nat -F
 $IPT -t nat -X
+#$IPT -t nat -A POSTROUTING -o $INET_IFACE -j MASQUERADE
 """
     for ip, vlan in cache.items():
         data += """

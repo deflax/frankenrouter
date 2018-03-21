@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PUBIF=ens18
-TRANSPORT_IP="87.120.110.252/24"
-TRANSPORT_GW="87.120.110.1"
-APIHOST="www.datapoint.bg"
-LABEL="lexx"
+TRANSPORT_IP="1.2.3.4/24"
+TRANSPORT_GW="1.2.3.1"
+APIHOST="www.api.tld"
+LABEL="routername"

@@ -323,7 +323,7 @@ python3 ipdel VLAN IP --- del IP from VLAN
             bashexec('vlsetup', setvlans(clientiface))
 
         if sys.argv[1] == 'allipsetup':
-            bashexec('allipsetup', allipsetup('/root/pubip.cache'))
+            allipsetup('/root/pubip.cache')
 
         if sys.argv[1] == 'ipadd':
             bashexec('ipadd-{}-{}'.format(sys.argv[2], sys.argv[3]), assignip(sys.argv[2], sys.argv[3]))

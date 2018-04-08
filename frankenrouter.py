@@ -311,7 +311,8 @@ $IPT -t nat -D POSTROUTING -s 10.0.{1}.10 -j SNAT --to-source {0}
 
 if __name__ == "__main__":
     helpdata = """
-python3 frankenrouter.py init --- setup the default firewall, read the contents of /root/pubip.cache and setup all assigments. Useful on startup
+python3 frankenrouter.py init --- setup the default firewall
+python3 frankenrouter.py allipsetup --- read the contents of /root/pubip.cache and setup all assigments. for startup.
 
 python3 ipadd VLAN IP --- add IP to VLAN
 python3 ipdel VLAN IP --- del IP from VLAN
@@ -321,7 +322,7 @@ python3 ipdel VLAN IP --- del IP from VLAN
             bashexec('fwsetup', initfw())
             bashexec('vlsetup', setvlans(clientiface))
 
-        if sys.argv[1] == 'allipadd':
+        if sys.argv[1] == 'allipsetup':
             bashexec('allipsetup', allipsetup('/root/pubip.cache'))
 
         if sys.argv[1] == 'ipadd':

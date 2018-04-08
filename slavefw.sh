@@ -10,8 +10,7 @@ sleep 3
 ip route add default via $TRANSPORT_GW
 
 python3 /root/frankenrouter/frankenrouter.py init
-python3 /root/frankenrouter/frankenrouter.py allipadd
-
+python3 /root/frankenrouter/frankenrouter.py allipsetup
 
 sysctl -p
 

@@ -6,6 +6,7 @@ import json
 import datetime
 import os
 import sys
+import re
 
 clientiface = 'ens19'
 workscriptpath = '/root/fr-workscripts/'
@@ -37,8 +38,9 @@ LO_IP="127.0.0.1"
 
 {2}""".format(workfile, today, data)
     filename = os.path.join(workscriptpath, workfile + '.sh')
-    prevfile = os.path.join(workscriptpath, workfile + '-{}'.format(today) + '.bak')
-    subprocess.call('mv {0} {1}'.format(filename, prevfile), shell=True)
+    #prevfile = os.path.join(workscriptpath, workfile + '-{}'.format(today) + '.bak')
+    #subprocess.call('mv {0} {1}'.format(filename, prevfile), shell=True)
+    subprocess.call('rm {0}'.format(filename), shell=True)
     writefile(filename, script)
     subprocess.call('chmod +x {}'.format(filename), shell=True)
     subprocess.call('{}'.format(filename), shell=True)
@@ -218,6 +220,7 @@ $IPT -A OUTPUT -p ALL -o $LO_IFACE -j ACCEPT
 $IPT -A OUTPUT -p ALL -o $INET_IFACE -j ACCEPT
 $IPT -A OUTPUT -j LOG --log-prefix "fp=OUTPUT:99 a=DROP "
 
+#$IPT -t nat -A POSTROUTING -o $INET_IFACE -j MASQUERADE
 """
     return data
 
@@ -274,34 +277,59 @@ dhcpd -4 -cf /root/fr-vlanconf/v{0}.dhconf -lf /root/fr-vlanconf/v{0}.dhlease -p
 """.format(vlanid, clientiface)
     return data
 
-def setpubips():
-    rr = open('/root/pubip.cache', 'r').read()
+def allipsetup(iplist):
+    rr = open(iplist, 'r').read()
     cache = json.loads(rr)
-    data = ''
-    data += """
-$IPT -t nat -P PREROUTING ACCEPT
-$IPT -t nat -P POSTROUTING ACCEPT
-$IPT -t nat -F
-$IPT -t nat -X
-#$IPT -t nat -A POSTROUTING -o $INET_IFACE -j MASQUERADE
-"""
+
+    conffile = open('/root/frankenrouter/config.sh', 'r')
+    for line in conffile:
+        if re.search('TRANSPORT_MASK', line):
+            ip_mask = line.split('=', 1)[1].rstrip().replace('"', '')
+    conffile.close()
+
     for ip, vlan in cache.items():
-        data += """
-ip link del vtap{1}
+        bashexec('ipadd-{}-{}'.format(ip, vlan), assignip(ip, ip_mask, vlan))
+
+def assignip(ip, ip_mask, vlan):
+    data = """
 ip link add vtap{1} link $INET_IFACE type macvlan
-ip addr add {0}/24 dev vtap{1}
+ip addr add {0}/{2} dev vtap{1}
 ip link set dev vtap{1} up
 $IPT -t nat -A PREROUTING -d {0} -j DNAT --to-destination 10.0.{1}.10
 $IPT -t nat -A POSTROUTING -s 10.0.{1}.10 -j SNAT --to-source {0}
+""".format(ip, vlan, ip_mask)
+    return data
+
+def removeip(ip, vlan):
+    data = """
+ip link set dev vtap{1} down
+ip link delete vtap{1}
+$IPT -t nat -D PREROUTING -d {0} -j DNAT --to-destination 10.0.{1}.10
+$IPT -t nat -D POSTROUTING -s 10.0.{1}.10 -j SNAT --to-source {0}
 """.format(ip, vlan)
     return data
 
 if __name__ == "__main__":
-    if sys.argv[1] == 'init':
-        bashexec('fwfconfig', initfw())
-        bashexec('vlfconfig', setvlans(clientiface))
-        bashexec('ipfconfig', setpubips())
+    helpdata = """
+python3 frankenrouter.py init --- setup the default firewall, read the contents of /root/pubip.cache and setup all assigments. Useful on startup
 
-    if sys.argv[1] == 'apply':
-        bashexec('ipfconfig', setpubips())
+python3 ipadd VLAN IP --- add IP to VLAN
+python3 ipdel VLAN IP --- del IP from VLAN
+"""
+    try:
+        if sys.argv[1] == 'init':
+            bashexec('fwsetup', initfw())
+            bashexec('vlsetup', setvlans(clientiface))
+
+        if sys.argv[1] == 'allipadd':
+            bashexec('allipsetup', allipsetup('/root/pubip.cache'))
+
+        if sys.argv[1] == 'ipadd':
+            bashexec('ipadd-{}-{}'.format(sys.argv[2], sys.argv[3]), assignip(sys.argv[2], sys.argv[3]))
+
+        if sys.argv[1] == 'ipdel':
+            bashexec('ipdel-{}-{}'.format(sys.argv[2], sys.argv[3]), removeip(sys.argv[2], sys.argv[3]))
+    except Exception as e:
+        print(str(e))
+        print(helpdata)
 

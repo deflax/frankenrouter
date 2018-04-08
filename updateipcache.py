@@ -35,3 +35,5 @@ if result['status'] == 'ok':
     wr.close()
     print('public ip cache updated')
 
+else:
+    print('no data')

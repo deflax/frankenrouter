@@ -307,8 +307,8 @@ if __name__ == "__main__":
 python3 frankenrouter.py init --- setup the default firewall
 python3 frankenrouter.py allipsetup --- read the contents of /root/pubip.cache and setup all assigments. for startup.
 
-python3 frankenrouter.py ipadd IP MASK VLAN --- add IP to VLAN
-    example: ipadd 87.120.110.120 24 142
+python3 frankenrouter.py ipadd IP VLAN --- add IP to VLAN
+    example: ipadd 87.120.110.120 142
 
 python3 frankenrouter,py ipdel IP VLAN --- del IP from VLAN
     example: ipdel 87.120.110.120 142
@@ -328,7 +328,7 @@ python3 frankenrouter,py ipdel IP VLAN --- del IP from VLAN
             allipsetup('/root/pubip.cache', ip_mask)
 
         if sys.argv[1] == 'ipadd':
-            bashexec('ipadd-{}-{}-{}'.format(sys.argv[2], ip_mask, sys.argv[3]), assignip(sys.argv[2], ip_mask, sys.argv[3]))
+            bashexec('ipadd-{}-{}'.format(sys.argv[2], sys.argv[3]), assignip(sys.argv[2], ip_mask, sys.argv[3]))
 
         if sys.argv[1] == 'ipdel':
             bashexec('ipdel-{}-{}'.format(sys.argv[2], sys.argv[3]), removeip(sys.argv[2], sys.argv[3]))

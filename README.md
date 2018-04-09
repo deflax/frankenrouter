@@ -2,6 +2,13 @@
 
 Frankenrouter software defined networking for proxadmin
 
+#
+1. edit frankenrouter/config.sh to add the transport ips and the subnet mask
+2. add to crontab:
+
+* *     * * *   root    python3 /root/frankenrouter/updateipcache.py >> /root/ipstate.log
+* *     * * *   root    sleep 30 ; python3 /root/frankenrouter/updateipcache.py >> /root/ipstate.log
+
 ### Tests ###
 
 * SHOULD be able to ping your own pub ip

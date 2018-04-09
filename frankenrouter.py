@@ -277,16 +277,9 @@ dhcpd -4 -cf /root/fr-vlanconf/v{0}.dhconf -lf /root/fr-vlanconf/v{0}.dhlease -p
 """.format(vlanid, clientiface)
     return data
 
-def allipsetup(iplist):
+def allipsetup(iplist, ip_mask):
     rr = open(iplist, 'r').read()
     cache = json.loads(rr)
-
-    conffile = open('/root/frankenrouter/config.sh', 'r')
-    for line in conffile:
-        if re.search('TRANSPORT_MASK', line):
-            ip_mask = line.split('=', 1)[1].rstrip().replace('"', '')
-    conffile.close()
-
     for ip, vlan in cache.items():
         bashexec('ipadd-{}-{}-{}'.format(ip, ip_mask, vlan), assignip(ip, ip_mask, vlan))
 
@@ -320,16 +313,22 @@ python3 frankenrouter.py ipadd IP MASK VLAN --- add IP to VLAN
 python3 frankenrouter,py ipdel IP VLAN --- del IP from VLAN
     example: ipdel 87.120.110.120 142
 """
+    conffile = open('/root/frankenrouter/config.sh', 'r')
+    for line in conffile:
+        if re.search('TRANSPORT_MASK', line):
+            ip_mask = line.split('=', 1)[1].rstrip().replace('"', '')
+    conffile.close()
+
     try:
         if sys.argv[1] == 'init':
             bashexec('fwsetup', initfw())
             bashexec('vlsetup', setvlans(clientiface))
 
         if sys.argv[1] == 'allipsetup':
-            allipsetup('/root/pubip.cache')
+            allipsetup('/root/pubip.cache', ip_mask)
 
         if sys.argv[1] == 'ipadd':
-            bashexec('ipadd-{}-{}-{}'.format(sys.argv[2], sys.argv[3], sys.argv[4]), assignip(sys.argv[2], sys.argv[3], sys.argv[4]))
+            bashexec('ipadd-{}-{}-{}'.format(sys.argv[2], ip_mask, sys.argv[3]), assignip(sys.argv[2], ip_mask, sys.argv[3]))
 
         if sys.argv[1] == 'ipdel':
             bashexec('ipdel-{}-{}'.format(sys.argv[2], sys.argv[3]), removeip(sys.argv[2], sys.argv[3]))

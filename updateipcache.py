@@ -31,6 +31,7 @@ except:
 if result['status'] == 'ok':
     del result['status']
     wr = open('/root/pubip.cache', 'w')
+    #TODO: Sort cache and compare.
     wr.write(json.dumps(result))
     wr.close()
     print('public ip cache updated')

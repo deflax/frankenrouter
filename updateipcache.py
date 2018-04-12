@@ -7,7 +7,7 @@ import re
 import subprocess
 from datetime import datetime 
 
-logp = datetime.now().strftime('[%Y-%m-%d-%H:%M] ')
+logp = datetime.now().strftime('[%Y-%m-%d %H:%M] ')
 
 class DictDiffer(object):
     """

@@ -5,6 +5,9 @@ import json
 import sys
 import re
 import subprocess
+from datetime import datetime 
+
+logp = datetime.now().strftime('[%Y-%m-%d-%H:%M] ')
 
 class DictDiffer(object):
     """
@@ -48,7 +51,7 @@ try:
     apireq = requests.post(api_url, headers={'Content-Type': 'application/json'}, data=json.dumps(data), timeout=30)
     result = apireq.json()
 except:
-    print('can not connect')
+    print(logp + 'can not connect')
     sys.exit()
 
 if result['status'] == 'ok':
@@ -67,14 +70,14 @@ if result['status'] == 'ok':
         for ipkey in difference.removed():
             ip = ipkey
             vlan = current_list[ipkey]
-            print('removed {} from {}'.format(ip, vlan))
+            print(logp + 'removed {} from {}'.format(ip, vlan))
             newdataflag = True
             subprocess.call('python3 /root/frankenrouter/frankenrouter.py ipdel {} {}'.format(ip, vlan), shell=True)
     if len(difference.added()) is not 0:
         for ipkey in difference.added():
             ip = ipkey
             vlan = new_list[ipkey]
-            print('added {} to {}'.format(ip, vlan))
+            print(logp + 'added {} to {}'.format(ip, vlan))
             newdataflag = True
             subprocess.call('python3 /root/frankenrouter/frankenrouter.py ipadd {} {}'.format(ip, vlan), shell=True)
 
@@ -85,11 +88,11 @@ if result['status'] == 'ok':
         w_ca = open('/root/pubip.cache', 'w')
         w_ca.write(json.dumps(new_list))
         w_ca.close()
-        print('public ip cache updated with the new data')
+        print(logp + 'public ip cache updated with the new data')
     else:
         pass
 
 else:
-    print('no data error')
+    print(logp + 'no data error')
 
 

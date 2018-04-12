@@ -63,13 +63,6 @@ if result['status'] == 'ok':
     #compare the current value with the cache
     newdataflag = False
     difference = DictDiffer(new_list, current_list)
-    if len(difference.added()) is not 0:
-        for ipkey in difference.added():
-            ip = ipkey
-            vlan = new_list[ipkey]
-            print('added {} to {}'.format(ip, vlan))
-            newdataflag = True
-            subprocess.call('python3 /root/frankenrouter/frankenrouter.py ipadd {} {}'.format(ip, vlan), shell=True)
     if len(difference.removed()) is not 0:
         for ipkey in difference.removed():
             ip = ipkey
@@ -77,6 +70,14 @@ if result['status'] == 'ok':
             print('removed {} from {}'.format(ip, vlan))
             newdataflag = True
             subprocess.call('python3 /root/frankenrouter/frankenrouter.py ipdel {} {}'.format(ip, vlan), shell=True)
+    if len(difference.added()) is not 0:
+        for ipkey in difference.added():
+            ip = ipkey
+            vlan = new_list[ipkey]
+            print('added {} to {}'.format(ip, vlan))
+            newdataflag = True
+            subprocess.call('python3 /root/frankenrouter/frankenrouter.py ipadd {} {}'.format(ip, vlan), shell=True)
+
 
     if newdataflag:
         # move the old cache and write the new data

@@ -224,7 +224,7 @@ $IPT -A OUTPUT -j LOG --log-prefix "fp=OUTPUT:99 a=DROP "
 """
     return data
 
-def setvlans(clientiface, vlanmin=101, vlanmax=150):
+def setvlans(vlanmin=101, vlanmax=150):
     #vlans
     data = ''
     for vlanid in range(vlanmin, vlanmax + 1, 1):
@@ -266,9 +266,12 @@ ip addr add 10.0.{0}.1/24 dev {1}.{0}
 
 #$IPT -I INPUT 3 -p ALL -i {1}.{0} -d 10.0.{0}.255 -j ACCEPT
 $IPT -I INPUT 3 -p ALL -i {1}.{0} -s 10.0.{0}.0/24 -j ACCEPT
+
+#NO ISOLATION
 $IPT -I FORWARD 3 -p ALL -i {1}.{0} -s 10.0.{0}.10 -j ACCEPT
+#ISOLATION
 #$IPT -I FORWARD 3 -p ALL -i {1}.{0} -o $INET_IFACE -s 10.0.{0}.10 -j ACCEPT
-##$IPT -I FORWARD 3 -p ALL -i $INET_IFACE -o {1}.{0} -d 10.0.{0}.10 -m state --state NEW -j ACCEPT
+
 $IPT -I OUTPUT 3 -p ALL -o {1}.{0} -j ACCEPT
 
 touch /root/fr-vlanconf/v{0}.dhpid
@@ -286,20 +289,24 @@ def allipsetup(iplist, ip_mask):
 def assignip(ip, ip_mask, vlan):
     data = """
 ip link add vtap{1} link $INET_IFACE type macvlan
-ip addr add {0}/{2} dev vtap{1}
+ip addr add {2}/{3} dev vtap{1}
 ip link set dev vtap{1} up
-$IPT -t nat -A PREROUTING -d {0} -j DNAT --to-destination 10.0.{1}.10
-$IPT -t nat -A POSTROUTING -s 10.0.{1}.10 -j SNAT --to-source {0}
-""".format(ip, vlan, ip_mask)
+$IPT -t nat -A POSTROUTING -s 10.0.{1}.10 -j SNAT --to-source {2}
+$IPT -t nat -A PREROUTING -d {2} -j DNAT --to-destination 10.0.{1}.10
+#$IPT -t nat -A POSTROUTING -o {0}.{1} -s 10.0.{1}.10 -j SNAT --to-source {2}
+#$IPT -t nat -A PREROUTING -i $INET_IFACE -d {2} -j DNAT --to-destination 10.0.{1}.10
+""".format(clientiface, vlan, ip, ip_mask)
     return data
 
 def removeip(ip, vlan):
     data = """
 ip link set dev vtap{1} down
 ip link delete vtap{1}
-$IPT -t nat -D PREROUTING -d {0} -j DNAT --to-destination 10.0.{1}.10
-$IPT -t nat -D POSTROUTING -s 10.0.{1}.10 -j SNAT --to-source {0}
-""".format(ip, vlan)
+$IPT -t nat -D POSTROUTING -s 10.0.{1}.10 -j SNAT --to-source {2}
+$IPT -t nat -D PREROUTING -d {2} -j DNAT --to-destination 10.0.{1}.10
+#$IPT -t nat -D POSTROUTING -o {0}.{1} -s 10.0.{1}.10 -j SNAT --to-source {2}
+#$IPT -t nat -D PREROUTING -i $INET_IFACE -d {2} -j DNAT --to-destination 10.0.{1}.10
+""".format(clientiface, vlan, ip)
     return data
 
 if __name__ == "__main__":
@@ -322,7 +329,7 @@ python3 frankenrouter,py ipdel IP VLAN --- del IP from VLAN
     try:
         if sys.argv[1] == 'init':
             bashexec('fwsetup', initfw())
-            bashexec('vlsetup', setvlans(clientiface))
+            bashexec('vlsetup', setvlans())
 
         if sys.argv[1] == 'allipsetup':
             allipsetup('/root/pubip.cache', ip_mask)
